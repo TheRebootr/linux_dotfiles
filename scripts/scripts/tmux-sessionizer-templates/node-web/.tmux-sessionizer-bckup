@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Color definitions for better user experience
+GREEN_BG='\033[1;30;42m'   # Bold white text on green background
+BLUE_BG='\033[1;30;44m'    # Bold white text on blue background
+CYAN_BG='\033[1;30;46m'    # Bold black text on cyan background
+RESET='\033[0m'            # Reset all formatting
+BOLD='\033[1m'             # Bold text
+
+echo -e "${BLUE_BG} Starting the Web Project 🚀 ${RESET}"
+echo ""
+
+# 1. Ensure the branch is latest
+echo -e "${CYAN_BG} ⏬ PULLING FROM ORIGIN ${RESET}"
+echo "Fetching and pulling latest changes..."
+if git fetch && git pull; then
+    echo -e "✅ Successfully updated from origin ${RESET}"
+else
+    echo -e "❌ Failed to pull from origin! ${RESET}"
+    echo -e "⚠️  WARNING: Continuing with local version ${RESET}"
+fi
+echo ""
+
+# 2. Check if required files exist
+echo -e "${CYAN_BG} 🔍 CHECKING ENVIRONMENT ${RESET}"
+
+# Check files individually (more compatible approach)
+check_file() {
+    local file="$1"
+    local description="$2"
+
+    if [[ ! -f "$file" ]]; then
+        echo -e "${YELLOW_BG} ⚠️  WARNING: $file file not found in $(pwd) ${RESET}"
+        echo -e "${BLUE_BG} 💡 You may need to create a $file file for $description ${RESET}"
+    else
+        echo -e "✅ $file file exists"
+    fi
+}
+
+# Check each required file
+check_file ".env" "environment configuration"
+check_file ".nvmrc" "Node Version Manager configuration"
+check_file ".gitignore" "Git ignore rules"
+check_file "package.json" "Node.js project metadata and dependencies"
+echo ""
+
+# 3. npm install
+echo -e "${CYAN_BG} 📦 INSTALLING DEPENDENCIES ${RESET}"
+echo "Running npm install..."
+if npm install; then
+    echo -e "✅ Dependencies installed successfully ${RESET}"
+else
+    echo -e "❌ Failed to install dependencies! ${RESET}"
+    exit 1
+fi
+echo ""
+
+# 4. npm run dev (run in current pane)
+echo -e "${CYAN_BG} 🔥 STARTING DEVELOPMENT SERVER ${RESET}"
+echo "Starting npm run dev in background..."
+npm run dev &
+DEV_PID=$!
+echo -e "✅ Development server started (PID: $DEV_PID) ${RESET}"
+echo ""
+
+# 5. Create a pane to the right and run lazygit
+echo -e "${CYAN_BG} 🪟 SETTING UP TMUX LAYOUT ${RESET}"
+echo "Creating right pane with lazygit..."
+tmux split-window -h -c "#{pane_current_path}"
+tmux send-keys -t right "lazygit" C-m
+
+# 6. Create a pane below the lazygit pane and cd to the project directory
+echo "Creating bottom terminal pane..."
+tmux split-window -v -c "#{pane_current_path}"
+tmux send-keys -t bottom "cd \"$(pwd)\"" C-m
+echo ""
+
+# 7. Make the dev server foreground process and rename the window
+tmux rename-window "server"
+tmux select-pane -t left
+tmux send-keys -t left "fg" C-m
+echo -e "${GREEN_BG} Server Window Created! ${RESET}"
+
+# 8. Create a new window named explorer and launch yazi
+tmux new-window -n "explorer"
+tmux send-keys -t explorer "yazi" C-m
+echo -e "${GREEN_BG} Explorer Window Created! ${RESET}"
+
+# 9. Create a new window named github and show the latest pull request and gh workflow view 'Deployment CD'
+# create an echo to note/comment to use gh action view and gh action watch
+tmux new-window -n "github"
+tmux send-keys -t github "gh pr list --state open" C-m
+tmux send-keys -t github "gh workflow view 'Deployment CD'" C-m
+tmux send-keys -t github "echo 'Use gh action view / gh action watch for deployment details'" C-m
+echo -e "${GREEN_BG} GitHub Window Created! ${RESET}"
+
+# 10. Bring the focus back to the server window
+tmux select-window -t server
+tmux select-pane -t left
+tmux display-message -d 5000 "Setup Complete, Happy Coding, Rob! 🎊 "

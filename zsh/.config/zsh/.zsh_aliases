@@ -1,0 +1,30 @@
+# Navigation
+alias cd..='cd ..'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# Development
+alias vim='nvim'
+alias lg='lazygit'
+alias cat='bat'
+alias grep='rg'
+alias find='fd'
+# Next level of an ls 
+# options :  --no-filesize --no-time --no-permissions 
+alias ls="eza --no-filesize --no-permissions --no-time --long --color=always --icons=always --no-user" 
+alias lsa="eza -a --no-filesize --color=always --icons=always --no-user" 
+alias vof="~/scripts/fzf_listoldfiles.sh"
+alias vf="~/scripts/zoxide_openfiles_nvim.sh"
+
+# calls the tmux new session script
+alias tns="~/scripts/tmux-sessionizer"
+
+# Functions for common tasks
+mkcd() { mkdir -p "$1" && cd "$1"; }
+f:unction y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}

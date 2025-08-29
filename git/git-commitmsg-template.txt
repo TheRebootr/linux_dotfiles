@@ -1,0 +1,6 @@
+# Generate a commit message based on the staged changes. 
+# Use conventional commit format: type(scope): description
+# Use imperative mood: 'Add feature' not 'Added feature'
+# Keep entire commit message under 80 characters
+# Use types: feat, fix, docs, style, refactor, perf, chore, ci
+# Include scope when relevant (e.g., api, ui, auth)

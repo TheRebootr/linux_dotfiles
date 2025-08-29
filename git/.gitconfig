@@ -1,0 +1,18 @@
+[user]
+	name = rca
+	email = rca@hafniabw.com
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[core]
+	pager = diff-so-fancy | less --tabs=4 -RF
+	editor = nvim
+[interactive]
+	diffFilter = diff-so-fancy --patch
+[commit]
+	template = /home/rca_fedora/git-commitmsg-template.txt
+[merge]
+	tool = vscode
